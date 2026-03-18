@@ -27,7 +27,7 @@ export default function SectionTitle({
         {title}
       </h2>
       {subtitle && (
-        <p className="mt-2 text-text-secondary text-sm md:text-base max-w-xl">
+        <p className={cn("mt-2 text-text-secondary text-sm md:text-base max-w-xl mx-auto", align === "center" && "text-center")}> 
           {subtitle}
         </p>
       )}

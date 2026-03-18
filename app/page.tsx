@@ -8,6 +8,7 @@ import LedgerFlow from "@/components/landing/LedgerFlow";
 import ScrollScene from "@/components/landing/ScrollScene";
 import ReportsScene from "@/components/landing/ReportsScene";
 import AIInsightsScene from "@/components/landing/AIInsightsScene";
+import PremiumFooter from "@/components/landing/PremiumFooter";
 import Link from "next/link";
 import { Zap } from "lucide-react";
 import Button from "@/components/ui/Button";
@@ -67,14 +68,7 @@ export default function LandingPage() {
         <AIInsightsScene />
       </main>
 
-      <footer className="py-12 border-t border-glass-border glass-strong text-center flex flex-col items-center justify-center">
-        <div className="w-8 h-8 rounded-lg gradient-orange flex items-center justify-center mb-4 grayscale opacity-50">
-          <Zap size={18} className="text-white" />
-        </div>
-        <p className="text-text-muted text-sm px-6">
-          © 2026 LedgerFlow Pro. Designed as a premium glassmorphic fintech operating system.
-        </p>
-      </footer>
+      <PremiumFooter />
     </div>
   );
 }

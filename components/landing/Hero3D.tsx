@@ -42,7 +42,12 @@ export default function Hero3D() {
 
         <AnimatedText
           as="h1"
-          text="Your Financial Operating System"
+          text="Your Financial"
+          className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight font-[family-name:var(--font-space-grotesk)] leading-[1.05] mb-2 justify-center"
+        />
+        <AnimatedText
+          as="h2"
+          text="Operating System"
           className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight font-[family-name:var(--font-space-grotesk)] leading-[1.05] mb-6 justify-center"
         />
 
