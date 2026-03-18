@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Zap } from "lucide-react";
+import { ChevronLeft, ChevronRight, LogOut, Zap } from "lucide-react";
 import { navItems } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/store";
@@ -16,12 +16,12 @@ export default function Sidebar() {
     <>
       {/* Desktop Sidebar */}
       <motion.aside
-        animate={{ width: sidebarCollapsed ? 80 : 240 }}
+        animate={{ width: sidebarCollapsed ? 86 : 236 }}
         transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-        className="hidden md:flex sticky top-0 h-screen shrink-0 flex-col z-40 glass-strong border-r border-glass-border shadow-soft"
+        className="hidden md:flex sticky top-0 h-screen shrink-0 flex-col z-40 border-r border-white/10 bg-[#0b0d12] shadow-[inset_-1px_0_0_rgba(255,255,255,0.04),0_10px_40px_rgba(0,0,0,0.45)]"
       >
         {/* Logo */}
-        <div className="flex items-center gap-3 px-4 h-16 border-b border-glass-border/70">
+        <div className="flex items-center gap-3 px-4 h-16 border-b border-white/10">
           <div className="w-8 h-8 rounded-lg gradient-orange flex items-center justify-center flex-shrink-0">
             <Zap size={18} className="text-white" />
           </div>
@@ -50,10 +50,10 @@ export default function Sidebar() {
                   whileHover={{ x: 3, scale: 1.01 }}
                   transition={{ duration: 0.2 }}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-2xl transition-all duration-300 group relative border overflow-hidden",
+                      "flex items-center gap-3 px-3 py-2 rounded-2xl transition-all duration-300 group relative border overflow-hidden",
                     isActive
-                      ? "text-white border-accent-orange/35 bg-gradient-to-r from-accent-orange/20 via-accent-orange/10 to-transparent shadow-[0_12px_28px_rgba(255,122,0,0.18)]"
-                      : "border-transparent text-text-secondary hover:text-white hover:border-white/12 hover:bg-white/[0.06]"
+                        ? "text-white border-accent-orange/35 bg-gradient-to-r from-accent-orange/25 via-accent-orange/10 to-transparent shadow-[0_12px_28px_rgba(255,122,0,0.18)]"
+                        : "border-transparent text-text-secondary hover:text-white hover:border-white/10 hover:bg-white/[0.04]"
                   )}
                 >
                   {isActive && (
@@ -97,20 +97,32 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* Collapse Button */}
-        <button
-          onClick={toggleSidebar}
-          className="mx-3 mb-4 px-3 py-2 rounded-xl border border-transparent hover:border-white/12 hover:bg-white/[0.06] transition-colors text-text-muted hover:text-white cursor-pointer"
-        >
-          {sidebarCollapsed ? (
-            <ChevronRight size={18} />
-          ) : (
-            <div className="flex items-center gap-2">
-              <ChevronLeft size={18} />
-              <span className="text-xs">Collapse</span>
-            </div>
-          )}
-        </button>
+        <div className="mt-auto border-t border-white/10 p-3">
+          <button
+            onClick={toggleSidebar}
+            className="mb-2 flex w-full items-center justify-center rounded-xl border border-transparent px-3 py-2 text-text-muted transition-colors hover:border-white/12 hover:bg-white/[0.06] hover:text-white cursor-pointer"
+          >
+            {sidebarCollapsed ? (
+              <ChevronRight size={18} />
+            ) : (
+              <div className="flex items-center gap-2">
+                <ChevronLeft size={18} />
+                <span className="text-xs">Collapse</span>
+              </div>
+            )}
+          </button>
+
+          <button className="flex w-full items-center justify-center rounded-xl border border-transparent px-3 py-2 text-text-muted transition-colors hover:border-white/12 hover:bg-white/[0.06] hover:text-white cursor-pointer">
+            {sidebarCollapsed ? (
+              <LogOut size={16} />
+            ) : (
+              <div className="flex items-center gap-2">
+                <LogOut size={16} />
+                <span className="text-xs">Sign out</span>
+              </div>
+            )}
+          </button>
+        </div>
       </motion.aside>
 
       {/* Mobile Bottom Nav */}
