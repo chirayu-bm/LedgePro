@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { type Transaction, mockTransactions } from "./constants";
+import type { AppRole } from "./contracts";
 
 interface AppState {
   // Sidebar
@@ -19,7 +20,7 @@ interface AppState {
   user: {
     name: string;
     email: string;
-    role: "admin" | "accountant" | "viewer";
+    role: AppRole;
     avatar?: string;
   } | null;
   setUser: (user: AppState["user"]) => void;
