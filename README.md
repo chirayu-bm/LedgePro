@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LedgerFlow Pro
 
-## Getting Started
+Intelligent multi-tenant financial operating system for SMEs.
 
-First, run the development server:
+## Architecture
+
+- `frontend/`: Next.js 16 + Tailwind + charts (UI preserved)
+- `backend/`: Express + Prisma + PostgreSQL + accounting services
+- `docker-compose.yml`: local Postgres container
+
+## Core Modules Implemented
+
+- Multi-tenant context (`x-tenant-slug` / `x-tenant-id`)
+- Role-based authorization (`ADMIN`, `ACCOUNTANT`, `VIEWER`)
+- Double-entry transaction posting
+- Journal, account rollups, and audit logs
+- Invoice and payment management
+- Reports: Profit & Loss, Trial Balance, Balance Sheet, Cash Flow
+- Analytics: forecast, anomaly detection, health score
+- Bank reconciliation preview via CSV matching
+
+## Quick Start
+
+1. Install dependencies
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm --prefix frontend install --legacy-peer-deps
+npm --prefix backend install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Create env files
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+copy backend\.env.example backend\.env
+copy frontend\.env.example frontend\.env
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Start PostgreSQL
 
-## Learn More
+```bash
+npm run db:up
+```
 
-To learn more about Next.js, take a look at the following resources:
+4. Generate Prisma client + push schema
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run db:generate
+npm run db:push
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+5. Start full stack
 
-## Deploy on Vercel
+```bash
+npm run dev:all
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Frontend: http://localhost:3000
+- Backend: http://localhost:4000
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Demo Credentials
+
+- Admin: `admin@ledgerflow.io` / `admin`
+- Accountant: `accountant@ledgerflow.io` / `accountant`
+- Viewer: `viewer@ledgerflow.io` / `viewer`
+
+## Important Note
+
+If Docker is not running, backend cannot connect to PostgreSQL and will fail startup. Start Docker Desktop first, then run `npm run db:up`.

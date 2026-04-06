@@ -1,34 +1,25 @@
 {
-  "name": "ledgepro-temp",
-  "version": "0.1.0",
+  "name": "ledgepro-monorepo",
   "private": true,
+  "version": "0.1.0",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "clsx": "^2.1.1",
-    "framer-motion": "^12.38.0",
-    "lenis": "^1.3.19",
-    "lucide-react": "^0.577.0",
-    "next": "16.1.7",
-    "next-auth": "^5.0.0-beta.25",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "recharts": "^3.8.0",
-    "tailwind-merge": "^3.5.0",
-    "zustand": "^5.0.12"
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "start": "cd frontend && npm run start",
+    "lint": "cd frontend && npm run lint",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "start:frontend": "cd frontend && npm run start",
+    "dev:backend": "cd backend && npm run dev",
+    "build:backend": "cd backend && npm run build",
+    "start:backend": "cd backend && npm run start",
+    "dev:all": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "db:generate": "cd backend && npm run db:generate",
+    "db:push": "cd backend && npm run db:push"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.1.7",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "concurrently": "^9.2.1"
   }
 }
