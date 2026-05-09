@@ -30,25 +30,31 @@ function parseRole(value?: string): Role {
 
 export async function withTenantContext(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const slug = req.header("x-tenant-slug") ?? env.DEFAULT_TENANT_SLUG;
+    // If auth middleware already set a tenantId or user identity, prefer that
+    const headerSlug = req.header("x-tenant-slug");
     const explicitTenantId = req.header("x-tenant-id");
     const requestedUserEmail = req.header("x-user-email")?.trim().toLowerCase();
     const requestedUserId = req.header("x-user-id") ?? undefined;
 
-    const tenant = explicitTenantId
+    const tenantIdFromCtx = req.ctx?.tenantId;
+
+    const tenant = tenantIdFromCtx
+      ? await prisma.tenant.findUnique({ where: { id: tenantIdFromCtx } })
+      : explicitTenantId
       ? await prisma.tenant.findUnique({ where: { id: explicitTenantId } })
-      : await prisma.tenant.findUnique({ where: { slug } });
+      : await prisma.tenant.findUnique({ where: { slug: headerSlug ?? env.DEFAULT_TENANT_SLUG } });
 
     if (!tenant) {
       res.status(404).json({ message: "Tenant not found" });
       return;
     }
 
-    let resolvedRole = parseRole(req.header("x-user-role") ?? undefined);
-    let resolvedUserId = requestedUserId;
-    let resolvedUserEmail = requestedUserEmail;
+    // If auth middleware already attached user info, prefer that
+    let resolvedRole = req.ctx?.role ?? parseRole(req.header("x-user-role") ?? undefined);
+    let resolvedUserId = req.ctx?.userId ?? requestedUserId;
+    let resolvedUserEmail = req.ctx?.userEmail ?? requestedUserEmail;
 
-    if (requestedUserEmail) {
+    if (!resolvedUserId && requestedUserEmail) {
       const membership = await prisma.user.findUnique({
         where: {
           tenantId_email: {
