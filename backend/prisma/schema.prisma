@@ -1,0 +1,220 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  ACCOUNTANT
+  VIEWER
+}
+
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+enum DebitCredit {
+  DEBIT
+  CREDIT
+}
+
+enum EntryKind {
+  INCOME
+  EXPENSE
+  TRANSFER
+  ADJUSTMENT
+}
+
+enum EntryStatus {
+  POSTED
+  DRAFT
+}
+
+enum InvoiceStatus {
+  DRAFT
+  PENDING
+  PARTIAL
+  PAID
+  OVERDUE
+  VOID
+}
+
+model Tenant {
+  id               String           @id @default(cuid())
+  name             String
+  slug             String           @unique
+  baseCurrency     String           @default("USD")
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  users            User[]
+  accounts         Account[]
+  journalEntries   JournalEntry[]
+  invoices         Invoice[]
+  payments         Payment[]
+  goals            Goal[]
+  auditLogs        AuditLog[]
+  balanceSnapshots BalanceSnapshot[]
+}
+
+model User {
+  id           String    @id @default(cuid())
+  tenantId     String
+  email        String
+  name         String
+  passwordHash String
+  role         Role      @default(VIEWER)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  entries      JournalEntry[] @relation("EntryAuthor")
+  goals        Goal[]         @relation("GoalAuthor")
+  auditLogs    AuditLog[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+}
+
+model Account {
+  id         String       @id @default(cuid())
+  tenantId   String
+  code       String
+  name       String
+  type       AccountType
+  normalSide DebitCredit
+  isSystem   Boolean      @default(false)
+  isActive   Boolean      @default(true)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  tenant     Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  lines      JournalLine[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId, type])
+}
+
+model JournalEntry {
+  id          String        @id @default(cuid())
+  tenantId    String
+  entryDate   DateTime
+  description String
+  reference   String?
+  kind        EntryKind
+  status      EntryStatus   @default(POSTED)
+  category    String?
+  createdById String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdBy   User?         @relation("EntryAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  lines       JournalLine[]
+
+  @@index([tenantId, entryDate])
+  @@index([tenantId, kind])
+}
+
+model JournalLine {
+  id        String       @id @default(cuid())
+  entryId   String
+  accountId String
+  debit     Decimal      @db.Decimal(14, 2)
+  credit    Decimal      @db.Decimal(14, 2)
+  memo      String?
+  entry     JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  account   Account      @relation(fields: [accountId], references: [id], onDelete: Restrict)
+
+  @@index([entryId])
+  @@index([accountId])
+}
+
+model Invoice {
+  id            String        @id @default(cuid())
+  tenantId      String
+  invoiceNumber String
+  clientName    String
+  subtotal      Decimal       @db.Decimal(14, 2)
+  taxAmount     Decimal       @db.Decimal(14, 2)
+  totalAmount   Decimal       @db.Decimal(14, 2)
+  paidAmount    Decimal       @db.Decimal(14, 2) @default(0)
+  currency      String        @default("USD")
+  status        InvoiceStatus @default(PENDING)
+  issuedDate    DateTime
+  dueDate       DateTime
+  paidAt        DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  tenant        Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  payments      Payment[]
+
+  @@unique([tenantId, invoiceNumber])
+  @@index([tenantId, status])
+  @@index([tenantId, dueDate])
+}
+
+model Payment {
+  id         String   @id @default(cuid())
+  tenantId   String
+  invoiceId  String
+  amount     Decimal  @db.Decimal(14, 2)
+  paidAt     DateTime @default(now())
+  method     String
+  reference  String?
+  createdAt  DateTime @default(now())
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  invoice    Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, paidAt])
+  @@index([invoiceId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  tenantId  String
+  userId    String?
+  action    String
+  entity    String
+  entityId  String
+  metadata  Json?
+  createdAt DateTime @default(now())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, entity])
+}
+
+model BalanceSnapshot {
+  id          String   @id @default(cuid())
+  tenantId    String
+  snapshotAt  DateTime @default(now())
+  cashIn      Decimal  @db.Decimal(14, 2)
+  cashOut     Decimal  @db.Decimal(14, 2)
+  netFlow     Decimal  @db.Decimal(14, 2)
+  healthScore Int
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, snapshotAt])
+}
+
+model Goal {
+  id          String   @id @default(cuid())
+  tenantId    String
+  label       String
+  description String?
+  current     Decimal  @db.Decimal(14, 2) @default(0)
+  target      Decimal  @db.Decimal(14, 2)
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdBy   User?    @relation("GoalAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+}
