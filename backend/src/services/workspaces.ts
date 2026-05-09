@@ -24,8 +24,17 @@ function toSlugBase(value: string): string {
     }
   }
 
-  // Remove leading/trailing dashes and limit length
-  return chars.join("").replace(/^-+|-+$/g, "").slice(0, 40);
+  // Remove leading/trailing dashes by trimming and limiting length
+  let result = chars.join("");
+  // Strip leading dashes
+  while (result.length > 0 && result[0] === "-") {
+    result = result.slice(1);
+  }
+  // Strip trailing dashes
+  while (result.length > 0 && result[result.length - 1] === "-") {
+    result = result.slice(0, -1);
+  }
+  return result.slice(0, 40);
 }
 
 async function makeUniqueTenantSlug(baseInput: string): Promise<string> {
