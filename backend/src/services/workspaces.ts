@@ -3,8 +3,6 @@ import { Role } from "@prisma/client";
 import { prisma } from "../db.js";
 import { ensureDefaultGoalsForTenant, ensureSystemAccountsForTenant } from "./bootstrap.js";
 
-const FALLBACK_INVITE_PASSWORD = "welcome123";
-
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
@@ -217,11 +215,18 @@ export async function inviteWorkspaceMember(input: {
   });
 
   const explicitPassword = (input.password ?? "").trim();
+  if (!explicitPassword && !existingMembership?.passwordHash && !knownIdentity?.passwordHash) {
+    throw new Error("Password is required when inviting a new user");
+  }
+
   const nextPasswordHash = explicitPassword
-    ? await bcrypt.hash(explicitPassword, 10)
+    ? await bcrypt.hash(explicitPassword, 12)
     : existingMembership?.passwordHash ??
-      knownIdentity?.passwordHash ??
-      (await bcrypt.hash(FALLBACK_INVITE_PASSWORD, 10));
+      knownIdentity?.passwordHash;
+
+  if (!nextPasswordHash) {
+    throw new Error("Unable to resolve password hash for invitee");
+  }
 
   const user = existingMembership
     ? await prisma.user.update({

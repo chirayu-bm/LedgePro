@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, type LucideIcon } from "lucide-react";
 import GlassCard from "@/components/ui/GlassCard";
 import { cn, formatCurrency, formatNumber } from "@/lib/utils";

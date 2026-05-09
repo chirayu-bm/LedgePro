@@ -31,9 +31,21 @@ npm --prefix backend install
 
 2. Create env files
 
+Create `backend/.env` with at least:
+
 ```bash
-copy backend\.env.example backend\.env
-copy frontend\.env.example frontend\.env
+DATABASE_URL=postgresql://ledgerflow:${POSTGRES_PASSWORD}@localhost:5432/ledgerflow
+JWT_SECRET=replace-with-a-long-random-secret-at-least-32-characters
+DEFAULT_TENANT_SLUG=demo-sme
+NODE_ENV=development
+CORS_ORIGINS=http://localhost:3000
+DEMO_USER_PASSWORD=replace-with-a-strong-password
+```
+
+And a root .env file for Docker Compose:
+
+```bash
+POSTGRES_PASSWORD=replace-with-a-strong-password
 ```
 
 3. Start PostgreSQL
@@ -60,9 +72,8 @@ npm run dev:all
 
 ## Demo Credentials
 
-- Admin: `admin@ledgerflow.io` / `admin`
-- Accountant: `accountant@ledgerflow.io` / `accountant`
-- Viewer: `viewer@ledgerflow.io` / `viewer`
+Demo users are only seeded in non-production environments when `DEMO_USER_PASSWORD` is set.
+All seeded demo users share that configured password.
 
 ## Important Note
 

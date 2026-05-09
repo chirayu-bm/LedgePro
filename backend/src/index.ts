@@ -102,7 +102,7 @@ const workspaceInviteSchema = z.object({
   email: z.string().email(),
   name: z.string().trim().min(2).max(80),
   role: z.enum(["admin", "accountant", "viewer"]),
-  password: z.string().trim().min(3).max(72).optional()
+  password: z.string().trim().min(8).max(72).optional()
 });
 
 function getDefaultNormalSide(type: AccountType): DebitCredit {
@@ -119,7 +119,24 @@ function getDefaultNormalSide(type: AccountType): DebitCredit {
   }
 }
 
-app.use(cors());
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      if (env.CORS_ALLOWED_ORIGINS.length === 0 || env.CORS_ALLOWED_ORIGINS.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error("CORS origin denied"));
+    },
+    credentials: true
+  })
+);
 app.use(express.json({ limit: "1mb" }));
 app.use(morgan("dev"));
 
@@ -626,7 +643,7 @@ app.use((error: unknown, _req: express.Request, res: express.Response, _next: ex
   }
 
   if (error instanceof Error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: env.NODE_ENV === "production" ? "Internal server error" : error.message });
     return;
   }
 

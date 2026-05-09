@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, Area, AreaChart } from "recharts";
+import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import GlassCard from "@/components/ui/GlassCard";
 import { revenueData } from "@/lib/constants";
 
@@ -18,9 +18,6 @@ export default function ReportsScene() {
 
   const chartScale = useTransform(scrollYProgress, [0.2, 0.6], [0.9, 1]);
   const chartOpacity = useTransform(scrollYProgress, [0.2, 0.6], [0.3, 1]);
-  
-  // Animate the line drawing based on scroll
-  const strokeDashoffset = useTransform(scrollYProgress, [0.3, 0.8], [1000, 0]);
 
   return (
     <section ref={containerRef} className="py-32 relative min-h-[100vh] flex items-center justify-center overflow-hidden">

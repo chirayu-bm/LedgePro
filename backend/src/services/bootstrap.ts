@@ -15,15 +15,25 @@ const SYSTEM_ACCOUNTS = [
 ];
 
 async function ensureUsers(tenantId: string): Promise<void> {
+  if (env.NODE_ENV === "production") {
+    return;
+  }
+
+  const demoPassword = (env.DEMO_USER_PASSWORD ?? "").trim();
+  if (!demoPassword) {
+    console.warn("DEMO_USER_PASSWORD not set; skipping demo user seed.");
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash(demoPassword, 12);
+
   const users = [
-    { name: "Aldeen Nasrun M", email: "admin@ledgerflow.io", role: Role.ADMIN, password: "admin" },
-    { name: "Accountant", email: "accountant@ledgerflow.io", role: Role.ACCOUNTANT, password: "accountant" },
-    { name: "Viewer", email: "viewer@ledgerflow.io", role: Role.VIEWER, password: "viewer" }
+    { name: "Workspace Admin", email: "admin@ledgerflow.io", role: Role.ADMIN },
+    { name: "Accountant", email: "accountant@ledgerflow.io", role: Role.ACCOUNTANT },
+    { name: "Viewer", email: "viewer@ledgerflow.io", role: Role.VIEWER }
   ];
 
   for (const user of users) {
-    const passwordHash = await bcrypt.hash(user.password, 10);
-
     await prisma.user.upsert({
       where: {
         tenantId_email: {
@@ -33,7 +43,8 @@ async function ensureUsers(tenantId: string): Promise<void> {
       },
       update: {
         name: user.name,
-        role: user.role
+        role: user.role,
+        passwordHash
       },
       create: {
         tenantId,

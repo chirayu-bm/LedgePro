@@ -26,15 +26,14 @@ const DEFAULT_SOCIAL_PROVIDER_IDS = ["google", "github", "apple"];
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState("admin@ledgerflow.io");
-  const [password, setPassword] = useState("admin");
-  const [tenantSlug, setTenantSlug] = useState("demo-sme");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [tenantSlug, setTenantSlug] = useState(() => getActiveTenantSlug());
   const [error, setError] = useState<string | null>(null);
   const [socialProviders, setSocialProviders] = useState<SocialProvider[]>([]);
 
   useEffect(() => {
     let cancelled = false;
-    setTenantSlug(getActiveTenantSlug());
 
     const loadProviders = async () => {
       try {
@@ -238,7 +237,7 @@ export default function LoginPage() {
             {socialHint && <p className="text-xs text-text-muted">{socialHint}</p>}
 
             <p className="text-xs text-text-muted">
-              Demo users: admin@ledgerflow.io / admin, accountant@ledgerflow.io / accountant, viewer@ledgerflow.io / viewer
+              Use credentials provided by your workspace admin.
             </p>
           </form>
         </div>
