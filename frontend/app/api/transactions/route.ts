@@ -36,8 +36,13 @@ export async function POST(request: Request) {
     );
   }
 
+  // Generate cryptographically secure transaction ID
+  const randomBytes = crypto.getRandomValues(new Uint8Array(2));
+  const randomNum = (randomBytes[0] << 8) | randomBytes[1];
+  const id = `TXN${(randomNum % 10000).toString().padStart(4, "0")}`;
+
   const newTransaction = {
-    id: `TXN${String(Math.floor(Math.random() * 10000)).padStart(4, "0")}`,
+    id,
     ...parsed.data,
     date: new Date().toISOString().split("T")[0],
   };

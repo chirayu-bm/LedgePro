@@ -8,12 +8,24 @@ function normalizeEmail(email: string): string {
 }
 
 function toSlugBase(value: string): string {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 40);
+  // Build slug character by character to avoid regex ReDoS vulnerabilities
+  // Only keep alphanumeric chars, replace sequences of non-alphanumeric with single dash
+  const chars: string[] = [];
+  const normalized = value.trim().toLowerCase();
+  let lastWasDash = false;
+
+  for (const char of normalized) {
+    if ((char >= "a" && char <= "z") || (char >= "0" && char <= "9")) {
+      chars.push(char);
+      lastWasDash = false;
+    } else if (!lastWasDash && chars.length > 0) {
+      chars.push("-");
+      lastWasDash = true;
+    }
+  }
+
+  // Remove leading/trailing dashes and limit length
+  return chars.join("").replace(/^-+|-+$/g, "").slice(0, 40);
 }
 
 async function makeUniqueTenantSlug(baseInput: string): Promise<string> {

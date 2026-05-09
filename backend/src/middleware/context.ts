@@ -33,7 +33,9 @@ export async function withTenantContext(req: Request, res: Response, next: NextF
     const slug = req.header("x-tenant-slug") ?? env.DEFAULT_TENANT_SLUG;
     const explicitTenantId = req.header("x-tenant-id");
     const requestedUserEmail = req.header("x-user-email")?.trim().toLowerCase();
-    const requestedUserId = req.header("x-user-id") ?? undefined;
+    // Never trust x-user-id header alone; it MUST be verified against the database
+    // Only use it if x-user-email is also provided (which triggers DB lookup)
+    const requestedUserId = undefined;
 
     const tenant = explicitTenantId
       ? await prisma.tenant.findUnique({ where: { id: explicitTenantId } })
@@ -45,7 +47,7 @@ export async function withTenantContext(req: Request, res: Response, next: NextF
     }
 
     let resolvedRole = parseRole(req.header("x-user-role") ?? undefined);
-    let resolvedUserId = requestedUserId;
+    let resolvedUserId: string | undefined = requestedUserId;
     let resolvedUserEmail = requestedUserEmail;
 
     if (requestedUserEmail) {
