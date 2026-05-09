@@ -9,7 +9,6 @@ import { env } from "./config.js";
 import { prisma } from "./db.js";
 import { withTenantContext } from "./middleware/context.js";
 import { requireRole } from "./middleware/rbac.js";
-import { authMiddleware } from "./middleware/auth.js";
 import { createAuditLog } from "./lib/audit.js";
 import { getInsights } from "./services/analytics.js";
 import { bootstrapTenant } from "./services/bootstrap.js";
@@ -120,18 +119,6 @@ function getDefaultNormalSide(type: AccountType): DebitCredit {
   }
 }
 
-// Security headers
-app.use((req, res, next) => {
-  res.setHeader("X-Content-Type-Options", "nosniff");
-  res.setHeader("X-Frame-Options", "DENY");
-  res.setHeader("Referrer-Policy", "no-referrer");
-  res.setHeader("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
-  res.setHeader("Permissions-Policy", "geolocation=(), microphone=()");
-  // Minimal CSP for API responses; keeps inline behavior safe for browsers consuming API
-  res.setHeader("Content-Security-Policy", "default-src 'none'; img-src 'self' data:; connect-src 'self'");
-  next();
-});
-
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -150,9 +137,6 @@ app.use(
     credentials: true
   })
 );
-
-// Attach auth context (if valid Bearer token) before tenant resolution
-app.use(authMiddleware);
 app.use(express.json({ limit: "1mb" }));
 app.use(morgan("dev"));
 
@@ -653,17 +637,17 @@ app.get("/api/audit-logs", requireRole(Role.ADMIN, Role.ACCOUNTANT), async (req,
 });
 
 app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  // Always log server errors for diagnostics, but avoid leaking internals to clients
-  // eslint-disable-next-line no-console
-  console.error(error);
-
   if (error instanceof z.ZodError) {
     res.status(400).json({ message: "Validation failed", issues: error.issues });
     return;
   }
 
-  // For non-Zod errors, return a generic message. Do not expose stack traces in production.
-  res.status(500).json({ message: env.NODE_ENV === "production" ? "Internal server error" : "Internal server error" });
+  if (error instanceof Error) {
+    res.status(500).json({ message: env.NODE_ENV === "production" ? "Internal server error" : error.message });
+    return;
+  }
+
+  res.status(500).json({ message: "Unknown server error" });
 });
 
 async function start(): Promise<void> {
